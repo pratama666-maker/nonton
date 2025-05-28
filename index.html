@@ -1,620 +1,452 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Retro CRT TV Simulator</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-  body {
-    background: #2e2b25;
-    margin: 0; padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    font-family: 'VT323', monospace;
-    user-select: none;
-    color: #ddd;
-  }
-  .tv-container {
-    position: relative;
-    width: 540px;
-    height: 390px;
-    background: linear-gradient(135deg, #3a2c1b 0%, #1c1210 40%, #392a1b 70%, #503f2e 100%);
-    border-radius: 40px 40px 35px 35px;
-    box-shadow:
-      inset 0 2px 10px rgba(255 255 255 / 0.07),
-      0 18px 40px rgba(0 0 0 / 0.8);
-    overflow: hidden;
-    border: 6px solid #3c2a19;
-  }
-  /* TV antenna on top */
-  .antenna {
-    position: absolute;
-    top: -110px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 140px;
-  }
-  .antenna-stick {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 6px;
-    height: 80px;
-    background: linear-gradient(180deg, #56503d, #2b2819);
-    border-radius: 8px;
-    transform: translateX(-50%);
-    box-shadow: inset 0 1px 2px #7a724f;
-  }
-  .antenna-arm {
-    position: absolute;
-    width: 70px;
-    height: 4px;
-    background: linear-gradient(90deg, #7b734e, #3a371a);
-    top: 25px;
-    left: 50%;
-    border-radius: 3px;
-    box-shadow: inset 0 1px 1px #a19969;
-  }
-  .antenna-arm.left {
-    transform-origin: right center;
-    transform: translateX(-50%) rotate(-30deg);
-    left: 12px;
-    top: 18px;
-  }
-  .antenna-arm.right {
-    transform-origin: left center;
-    transform: translateX(-50%) rotate(30deg);
-    left: auto;
-    right: 12px;
-    top: 18px;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contoh Link Script dan CSS</title>
 
-  /* Screen */
-  .screen {
-    position: relative;
-    background: #000;
-    width: 520px;
-    height: 290px;
-    margin: 25px auto 0;
-    border-radius: 28px;
-    box-shadow: inset 0 0 60px #003e3e, 0 0 10px #000;
-    overflow: hidden;
-    filter: contrast(1.1) brightness(1.1);
-  }
-  /* Channel number top-right */
-  .channel-number {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    font-size: 32px;
-    font-weight: bold;
-    color: #61ff6b;
-    text-shadow:
-      0 0 4px #61ff6b,
-      0 0 8px #28c136;
-    user-select: none;
-    z-index: 21;
-    font-family: 'VT323', monospace;
-  }
-
-  /* Video container */
-  video {
-    width: 100%;
-    height: 100%;
-    display: block;
-    background: #000;
-    object-fit: cover;
-  }
-
-  /* Noise overlays */
-  .noise-overlay {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    mix-blend-mode: screen;
-    animation: noise 0.2s infinite;
-    z-index: 19;
-  }
-  .noise-overlay.light {
-    opacity: 0.06;
-  }
-  .noise-overlay.heavy {
-    opacity: 0.3;
-  }
-
-  @keyframes noise {
-    0%, 100% { background-position: 0 0; }
-    10% { background-position: -5px -5px; }
-    20% { background-position: 5px 5px; }
-    30% { background-position: -5px 5px; }
-    40% { background-position: 5px -5px; }
-    50% { background-position: 0 0; }
-    60% { background-position: -3px 3px; }
-    70% { background-position: 3px -3px; }
-    80% { background-position: -3px -3px; }
-    90% { background-position: 3px 3px; }
-  }
-
-  /* Noise texture - small dots */
-  .noise-overlay {
-    background-image: 
-      radial-gradient(#ccc 1px, transparent 1px),
-      radial-gradient(#ccc 1px, transparent 1px);
-    background-position: 0 0, 5px 5px;
-    background-size: 10px 10px;
-  }
-
-  /* Noise heavy uses bigger dots to appear more static */
-  .noise-overlay.heavy {
-    background-image:
-      radial-gradient(#eee 2px, transparent 2px),
-      radial-gradient(#eee 2px, transparent 2px);
-    background-position: 0 0, 10px 10px;
-    background-size: 20px 20px;
-  }
-
-  /* Power off full screen flash noise */
-  .flash-noise {
-    position: absolute;
-    inset: 0;
-    background-color: #aaa;
-    animation: flashNoise 0.3s linear forwards;
-    mix-blend-mode: screen;
-    pointer-events: none;
-    z-index: 100;
-  }
-  @keyframes flashNoise {
-    0% { background-color: #fff; }
-    100% { background-color: #000; }
-  }
-
-  /* Controls below screen */
-  .controls {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 14px;
-    user-select: none;
-    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.7));
-  }
-  button {
-    cursor: pointer;
-    border: none;
-    color: #eee;
-    background: linear-gradient(145deg, #433422, #3a2e20);
-    box-shadow:
-      inset 1px 1px 3px #5b4a35,
-      inset -1px -1px 3px #2e230d;
-    transition: background-color 0.15s ease, box-shadow 0.15s ease;
-  }
-  button:focus {
-    outline: 2px solid #61ff6b;
-    outline-offset: 2px;
-  }
-
-  button:hover {
-    background: linear-gradient(145deg, #4a3a29, #624e35);
-    box-shadow:
-      0 0 8px #48ff6f,
-      inset 1px 1px 5px #7aff7e,
-      inset -1px -1px 7px #3e4e26;
-    color: #b9f9b5;
-  }
-
-  /* Power button round */
-  .btn-power {
-    width: 54px;
-    height: 54px;
-    border-radius: 50%;
-    font-size: 28px;
-    font-weight: bold;
-    line-height: 54px;
-    text-align: center;
-    background: radial-gradient(circle at center, #833c14, #422006);
-    box-shadow:
-      inset 0 0 20px #f87416,
-      0 0 10px #c44b00;
-  }
-  .btn-power.power-on {
-    background: radial-gradient(circle at center, #4caf50, #2e7d32);
-    box-shadow:
-      inset 0 0 18px #a6dda6,
-      0 0 15px #66c466;
-  }
-
-  /* Other buttons elongated with rounded edges */
-  .btn-elongated {
-    height: 38px;
-    padding: 8px 20px;
-    border-radius: 20px;
-    font-size: 17px;
-    font-weight: 600;
-    user-select: none;
-    box-shadow:
-      inset 1px 1px 3px #5b4a35,
-      inset -1px -1px 3px #2e230d;
-  }
-
-  /* Power indicator text */
-  .power-indicator {
-    margin-top: 10px;
-    text-align: center;
-    font-size: 18px;
-    color: #61ff6b;
-    text-shadow: 0 0 6px #3ba23b;
-    font-family: 'VT323', monospace;
-  }
-
-  /* Volume bar inside screen */
-  .volume-indicator {
-    position: absolute;
-    bottom: 14px;
-    left: 20px;
-    display: flex;
-    align-items: center;
-    font-size: 24px;
-    color: #61ff6b;
-    user-select: none;
-    letter-spacing: 6px;
-    font-family: 'VT323', monospace;
-    font-weight: 700;
-    z-index: 20;
-  }
-  .volume-line {
-    width: 4px;
-    background-color: #61ff6b;
-    margin: 0 3px;
-    border-radius: 1px;
-  }
-
-  /* Video audio retro effect - slight distortion using filter + canvas overlay is complex */
-  /* Will add subtle vibration effect by quick small horizontal layer movement on video that can simulate old CRT */
-  .video-retro {
-    animation: slightVibrate 0.15s infinite alternate;
-  }
-
-  @keyframes slightVibrate {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(1.5px); }
-  }
-
-  /* Channel empty message */
-  .channel-empty-msg {
-    position: absolute;
-    inset: 0;
-    color: #518c4e;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'VT323', monospace;
-    font-size: 32px;
-    text-shadow: 0 0 4px #457f3a;
-    z-index: 20;
-    user-select: none;
-  }
-</style>
+  <!-- Link CSS -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+    <main>
+      <nav class="main-menu">
+        <div>
+          <div class="user-info">
+            <img
+              src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/37e5ccfa-f9ee-458b-afa2-dcd85b495e4e"
+              alt="user" />
+            <p>Jane Wilson</p>
+          </div>
+          <ul>
+            <li class="nav-item active">
+              <a href="#">
+                <i class="fa fa-map nav-icon"></i>
+                <span class="nav-text">Discover</span>
+              </a>
+            </li>
 
-<div class="tv-container" role="main" aria-label="Retro style CRT TV">
+            <li class="nav-item">
+              <a href="#">
+                <i class="fa fa-arrow-trend-up nav-icon"></i>
+                <span class="nav-text">Trending</span>
+              </a>
+            </li>
 
-  <div class="antenna" aria-hidden="true">
-    <div class="antenna-stick"></div>
-    <div class="antenna-arm left"></div>
-    <div class="antenna-arm right"></div>
-  </div>
+            <li class="nav-item">
+              <a href="#">
+                <i class="fa fa-compact-disc nav-icon"></i>
+                <span class="nav-text">Album</span>
+              </a>
+            </li>
 
-  <div class="screen" id="screen" aria-live="polite" aria-atomic="true" aria-labelledby="channelLabel">
-    <div class="channel-number" id="channelNumber" aria-label="Current channel number">--</div>
+            <li class="nav-item">
+              <a href="#">
+                <i class="fa fa-circle-play nav-icon"></i>
+                <span class="nav-text">Playlist</span>
+              </a>
+            </li>
 
-    <video id="video" autoplay muted playsinline></video>
-    <div class="noise-overlay light" id="lightNoise" aria-hidden="true"></div>
-    <div class="noise-overlay heavy" id="heavyNoise" aria-hidden="true" style="display:none;"></div>
+            <li class="nav-item">
+              <a href="#">
+                <i class="fa fa-heart nav-icon"></i>
+                <span class="nav-text">Favorites</span>
+              </a>
+            </li>
+          </ul>
+        </div>
 
-    <div class="volume-indicator" aria-label="Volume level" role="region" aria-live="polite" aria-atomic="true" id="volumeIndicator" >
-      <span>-</span>
-      <div class="volume-line" style="height: 12px;"></div>
-      <div class="volume-line" style="height: 24px;"></div>
-      <div class="volume-line" style="height: 36px;"></div>
-      <div class="volume-line" style="height: 48px;"></div>
-      <span>+</span>
-    </div>
+        <ul>
+          <li class="nav-item">
+            <a href="#">
+              <i class="fa fa-user nav-icon"></i>
+              <span class="nav-text">Profile</span>
+            </a>
+          </li>
 
-    <div class="channel-empty-msg" id="emptyMsg" style="display: none;">NO SIGNAL</div>
-  </div>
+          <li class="nav-item">
+            <a href="#">
+              <i class="fa fa-gear nav-icon"></i>
+              <span class="nav-text">Settings</span>
+            </a>
+          </li>
 
-  <div class="controls" role="region" aria-label="TV controls">
-    <button class="btn-power" id="powerBtn" aria-pressed="false" aria-label="Power button">⏻</button>
-    <button class="btn-elongated" id="prevBtn" aria-label="Previous channel">PREV</button>
-    <button class="btn-elongated" id="nextBtn" aria-label="Next channel">NEXT</button>
-    <button class="btn-elongated" id="volDownBtn" aria-label="Volume down">VOL -</button>
-    <button class="btn-elongated" id="volUpBtn" aria-label="Volume up">VOL +</button>
-  </div>
-  <div class="power-indicator" id="powerIndicator" aria-live="polite" aria-atomic="true">Power: OFF</div>
-</div>
+          <li class="nav-item">
+            <a href="#">
+              <i class="fa fa-right-from-bracket nav-icon"></i>
+              <span class="nav-text">Logout</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
 
-<!-- Audio sources for sound effects -->
-<audio id="soundPowerOn" src="https://pratama666-maker.github.io/nonton/ui-sound-on-270295.mp3" preload="auto"></audio>
-<audio id="soundPowerOff" src="https://pratama666-maker.github.io/nonton/ui-sound-on-270295.mp3" preload="auto"></audio>
-  <audio id="soundNext" src="https://pratama666-maker.github.io/nonton/ui-sound-on-270295.mp3" preload="auto"></audio>
-  <audio id="soundPrev" src="https://pratama666-maker.github.io/nonton/ui-sound-on-270295.mp3" preload="auto"></audio>
-<!-- Stronger noise for static/empty channels -->
-<audio id="soundNoiseStrong" loop src="https://pratama666-maker.github.io/nonton/Turning Off Old Tv Effect (Power Off).mp3" preload="auto"></audio>
-<!-- Subtle noise overlay sound for video channels -->
-<audio id="soundNoiseSubtle" loop src="https://pratama666-maker.github.io/nonton/Turning Off Old Tv Effect (Power Off).mp3" preload="auto"></audio>
+      <section class="content">
+        <div class="left-content">
+          <div class="slider-container">
+            <h1>Popular Playlist</h1>
+            <div class="swiper">
+              <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/95b52c32-f5da-4fe6-956d-a5ed118bbdd2" />
+                  <div class="slide-overlay">
+                    <h2>Midnight Moods</h2>
+                    <button>
+                      Listen Now <i class="fa-solid fa-circle-play"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="swiper-slide">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/6ddf81f5-2689-4f34-bf80-a1e07f14621c" />
+                  <div class="slide-overlay">
+                    <h2>Party Starters</h2>
+                    <button>
+                      Listen Now <i class="fa-solid fa-circle-play"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="swiper-slide">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/ab52d9d0-308e-43e0-a577-dce35fedd2a3" />
+                  <div class="slide-overlay">
+                    <h2>Relaxing Tones</h2>
+                    <button>
+                      Listen Now <i class="fa-solid fa-circle-play"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="swiper-slide">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/20c8fdd5-9f4a-4917-ae90-0239a52e8334" />
+                  <div class="slide-overlay">
+                    <h2>Smooth Jazz Journey</h2>
+                    <button>
+                      Listen Now <i class="fa-solid fa-circle-play"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="swiper-slide">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/df461a99-2fb3-4d55-ac16-2e0c6dd783e1" />
+                  <div class="slide-overlay">
+                    <h2>Uplifting Rhythms</h2>
+                    <button>
+                      Listen Now <i class="fa-solid fa-circle-play"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="swiper-pagination"></div>
+            </div>
+          </div>
 
-<script>
-  (() => {
-    const video = document.getElementById('video');
-    const powerBtn = document.getElementById('powerBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const volUpBtn = document.getElementById('volUpBtn');
-    const volDownBtn = document.getElementById('volDownBtn');
-    const channelNumberElem = document.getElementById('channelNumber');
-    const powerIndicator = document.getElementById('powerIndicator');
-    const lightNoise = document.getElementById('lightNoise');
-    const heavyNoise = document.getElementById('heavyNoise');
-    const emptyMsg = document.getElementById('emptyMsg');
-    const volumeIndicator = document.getElementById('volumeIndicator');
-    const soundPowerOn = document.getElementById('soundPowerOn');
-    const soundPowerOff = document.getElementById('soundPowerOff');
-    const soundNoiseStrong = document.getElementById('soundNoiseStrong');
-    const soundNoiseSubtle = document.getElementById('soundNoiseSubtle');
-    const screen = document.getElementById('screen');
+          <div class="artists">
+            <h1>Featured Artists</h1>
+            <div class="artist-container containers">
+              <div class="artist">
+                <div class="artist-img-container"><img
+                  src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/c8feaa0f-6ae7-4c69-bb7d-4a11de76b4f5"
+                  alt="" /></div>
+                <p>Taylor Swift</p>
+              </div>
 
-    let powerOn = false;
-    let currentChannel = 0;
-    let volume = 4; // range 0 to 5
-    const MAX_VOLUME = 5;
-    const MIN_VOLUME = 0;
+              <div class="artist">
+                <div class="artist-img-container"><img
+                  src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/bf80314e-5a02-4702-bb64-eae8c113c417"
+                  alt="" /></div>
+                <p>The Weeknd</p>
+              </div>
 
-    // Channel list: Array of channels, each channel can be video url or null (empty channel)
-    const channels = [
-      null, // channel 0 empty
-      'https://pratama666-maker.github.io/nonton/Untungnya,%20Hidup%20Harus%20Tetap%20Berjalan%20Bernadya%20Pop%20Punk%20Cover%20by%20Boedak%20Korporat.mp4',
-      'https://pratama666-maker.github.io/nonton/Untungnya,%20Hidup%20Harus%20Tetap%20Berjalan%20Bernadya%20Pop%20Punk%20Cover%20by%20Boedak%20Korporat.mp4',
-      null,
-      'https://pratama666-maker.github.io/nonton/Untungnya,%20Hidup%20Harus%20Tetap%20Berjalan%20Bernadya%20Pop%20Punk%20Cover%20by%20Boedak%20Korporat.mp4',
-      null
-    ];
-    // Channels display number start from 1 for user
-    const totalChannels = channels.length;
+              <div class="artist">
+                <div class="artist-img-container"><img
+                  src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/e4576af8-0e84-4343-8f90-7a01acb9c8b7"
+                  alt="" /></div>
+                <p>Dua Lipa</p>
+              </div>
 
-    // Update displayed channel number
-    function updateChannelNumber() {
-      channelNumberElem.textContent = (currentChannel + 1).toString().padStart(2, '0');
-      channelNumberElem.setAttribute('aria-label', `Current channel number ${(currentChannel+1)}`);
-    }
+              <div class="artist">
+                <div class="artist-img-container"><img
+                  src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/d8eb2888-1e74-4117-82d7-833ad29e3cc1"
+                  alt="" /></div>
+                <p>Jimin</p>
+              </div>
 
-    // Update volume visual inside screen
-    function updateVolumeIndicator() {
-      const lines = volumeIndicator.querySelectorAll('.volume-line');
-      lines.forEach((line, idx) => {
-        if (idx < volume) {
-          line.style.opacity = '1';
-          line.style.backgroundColor = '#61ff6b';
-          line.style.boxShadow = '0 0 8px #66c466';
-        } else {
-          line.style.opacity = '0.15';
-          line.style.backgroundColor = '#326931';
-          line.style.boxShadow = 'none';
-        }
-      });
-    }
+              <div class="artist">
+                <div class="artist-img-container"><img
+                  src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/f23adc16-11d7-41dc-af6a-191e03a81603"
+                  alt="" /></div>
+                <p>Alicia Keys</p>
+              </div>
 
-    // Play sound effect with volume safe try
-    function playSound(audioElement) {
-      audioElement.volume = 0.6;
-      audioElement.currentTime = 0;
-      audioElement.play().catch(() => {
-        // ignore play error if not allowed by user gesture
-      });
-    }
+              <div class="artist">
+                <div class="artist-img-container"><img
+                  src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/f511c102-3217-4bea-bede-8be23b969bd8"
+                  alt="" /></div>
+                <p>Maroon 5</p>
+              </div>
 
-    // Smooth volume fade helper
-    function fadeAudio(audioElement, fromVol, toVol, duration) {
-      const startTime = performance.now();
-      function step(now) {
-        const elapsed = now - startTime;
-        if (elapsed < duration) {
-          audioElement.volume = fromVol + (toVol - fromVol) * (elapsed / duration);
-          requestAnimationFrame(step);
-        } else {
-          audioElement.volume = toVol;
-          if (toVol === 0) audioElement.pause();
-        }
-      }
-      requestAnimationFrame(step);
-    }
+              <div class="artist">
+                <div class="artist-img-container"><img
+                  src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/9a8bd237-b525-43e6-a37c-daaac39db8ce"
+                  alt="" /></div>
+                <p>Imagine Dragons</p>
+              </div>
 
-    function stopNoiseSounds() {
-      [soundNoiseStrong, soundNoiseSubtle].forEach(audio => {
-        if (!audio.paused) {
-          fadeAudio(audio, audio.volume, 0, 400);
-        }
-      });
-    }
+              <div class="artist">
+                <div class="artist-img-container"><img
+                  src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/99452c85-26f4-4ccd-b439-7d1bd3875634"
+                  alt="" /></div>
+                <p>Billie Eilish</p>
+              </div>
+            </div>
+          </div>
 
-    function playNoiseStrong() {
-      if (soundNoiseStrong.paused) {
-        soundNoiseStrong.volume = 0;
-        soundNoiseStrong.play().catch(() => {});
-      }
-      fadeAudio(soundNoiseStrong, soundNoiseStrong.volume, 0.45, 500);
-      // Ensure subtle noise off when strong noise playing:
-      if (!soundNoiseSubtle.paused) {
-        fadeAudio(soundNoiseSubtle, soundNoiseSubtle.volume, 0, 300);
-      }
-    }
-    function playNoiseSubtle() {
-      if (soundNoiseSubtle.paused) {
-        soundNoiseSubtle.volume = 0;
-        soundNoiseSubtle.play().catch(() => {});
-      }
-      fadeAudio(soundNoiseSubtle, soundNoiseSubtle.volume, 0.15, 300);
-      // Ensure strong noise off when subtle noise playing:
-      if (!soundNoiseStrong.paused) {
-        fadeAudio(soundNoiseStrong, soundNoiseStrong.volume, 0, 500);
-      }
-    }
+          <div class="albums">
+            <h1>Recommended Albums</h1>
+            <div class="album-container containers">
+              <div class="album">
+                <div class="album-frame">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/74c4f0f9-d73e-4737-83fa-ea4afe392229"
+                    alt="" />
+                </div>
+                <div>
+                  <h2>Views</h2>
+                  <p>Drake</p>
+                </div>
+              </div>
 
-    // Show noise overlay conditionally:
-    // If channel has video: show light noise + subtle noise sound
-    // If channel empty: show heavy noise + strong noise sound + empty message
-    // If power off: no video or noise displays and no noise sound, only black screen with flash noise animation
-    function updateScreenContent() {
-      if (!powerOn) {
-        video.pause();
-        video.src = '';
-        emptyMsg.style.display = 'none';
-        lightNoise.style.display = 'none';
-        heavyNoise.style.display = 'none';
-        stopNoiseSounds();
-        return;
-      }
-      const channelUrl = channels[currentChannel];
-      updateChannelNumber();
+              <div class="album">
+                <div class="album-frame">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/d3a0bac0-fdb4-467e-bdf5-f3f415928f24"
+                    alt="" />
+                </div>
+                <div>
+                  <h2>Speak Now</h2>
+                  <p>Taylor Swift</p>
+                </div>
+              </div>
 
-      if (!channelUrl) {
-        // empty channel, show heavy noise and static
-        video.pause();
-        video.src = '';
-        emptyMsg.style.display = 'flex';
-        heavyNoise.style.display = '';
-        lightNoise.style.display = 'none';
-        playNoiseStrong();
-      } else {
-        // channel with video
-        emptyMsg.style.display = 'none';
-        heavyNoise.style.display = 'none';
-        lightNoise.style.display = '';
-        video.classList.add('video-retro');
-        video.src = channelUrl;
-        video.volume = volume / MAX_VOLUME;
-        video.play().catch(() => {});
-        playNoiseSubtle();
-      }
-    }
+              <div class="album">
+                <div class="album-frame">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/85521a12-cc46-4b9f-a742-21ba407ebd5e"
+                    alt="" />
+                </div>
+                <div>
+                  <h2>Born to Die</h2>
+                  <p>Lana Del Rey</p>
+                </div>
+              </div>
 
-    // Flash noise animation on power off for ~0.3s
-    function animateFlashNoise() {
-      const flashDiv = document.createElement('div');
-      flashDiv.className = 'flash-noise';
-      screen.appendChild(flashDiv);
-      setTimeout(() => {
-        flashDiv.remove();
-      }, 300);
-    }
+              <div class="album">
+                <div class="album-frame">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/4e7bf466-7fa5-4dad-b628-5bca12833b64"
+                    alt="" />
+                </div>
+                <div>
+                  <h2>Endless Summer Vacation</h2>
+                  <p>Miley Cyrus</p>
+                </div>
+              </div>
 
-    // Toggle power
-    function togglePower() {
-      if (powerOn) {
-        // Turn off
-        powerOn = false;
-        powerIndicator.textContent = 'Power: OFF';
-        powerBtn.classList.remove('power-on');
-        powerBtn.setAttribute('aria-pressed', 'false');
-        animateFlashNoise();
-        updateScreenContent();
-        playSound(soundPowerOff);
-      } else {
-        // Turn on
-        powerOn = true;
-        powerIndicator.textContent = 'Power: ON';
-        powerBtn.classList.add('power-on');
-        powerBtn.setAttribute('aria-pressed', 'true');
-        playSound(soundPowerOn);
-        updateScreenContent();
-      }
-    }
+              <div class="album">
+                <div class="album-frame">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/f01f546a-7ab7-4e90-acb9-1c1e817b676d"
+                    alt="" />
+                </div>
+                <div>
+                  <h2>The Dark Side of The Moon</h2>
+                  <p>Pink Floyd</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    // Next channel
-    function nextChannel() {
-      if (!powerOn) return;
-      currentChannel = (currentChannel + 1) % totalChannels;
-      updateScreenContent();
-    }
-    // Prev channel
-    function prevChannel() {
-      if (!powerOn) return;
-      currentChannel = (currentChannel - 1 + totalChannels) % totalChannels;
-      updateScreenContent();
-    }
+        <div class="right-content">
+          <div class="recommended-songs">
+            <h1>Recommended Songs</h1>
+            <div class="song-container">
+              <div class="song">
+                <div class="song-img">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/ea61baa7-9c4b-4f43-805e-81de5fc8aa2b"
+                    alt="" />
+                  <div class="overlay">
+                    <i class="fa-solid fa-play"></i>
+                  </div>
+                </div>
+                <div class="song-title">
+                  <h2>Blank Space</h2>
+                  <p>Taylor Swift</p>
+                </div>
+                <span>4:33</span>
+              </div>
 
-    // Volume Up
-    function volumeUp() {
-      if (!powerOn) return;
-      if (volume < MAX_VOLUME) {
-        volume++;
-        updateVolumeIndicator();
-        if (channels[currentChannel]) {
-          video.volume = volume / MAX_VOLUME;
-        }
-      }
-    }
-    // Volume Down
-    function volumeDown() {
-      if (!powerOn) return;
-      if (volume > MIN_VOLUME) {
-        volume--;
-        updateVolumeIndicator();
-        if (channels[currentChannel]) {
-          video.volume = volume / MAX_VOLUME;
-        }
-      }
-    }
+              <div class="song">
+                <div class="song-img">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/6f72f702-c049-46fe-af76-a3b188b9a909"
+                    alt="" />
+                  <div class="overlay">
+                    <i class="fa-solid fa-play"></i>
+                  </div>
+                </div>
+                <div class="song-title">
+                  <h2>One Dance</h2>
+                  <p>Drake</p>
+                </div>
+                <span>4:03</span>
+              </div>
 
-    // Keyboard support for demo and accessibility
-    function onKeyDown(e) {
-      if (e.repeat) return;
-      switch(e.key) {
-        case 'p':
-        case 'P':
-        case ' ':
-        case 'Enter':
-          togglePower();
-          e.preventDefault();
-          break;
-        case 'ArrowRight':
-          nextChannel();
-          e.preventDefault();
-          break;
-        case 'ArrowLeft':
-          prevChannel();
-          e.preventDefault();
-          break;
-        case 'ArrowUp':
-          volumeUp();
-          e.preventDefault();
-          break;
-        case 'ArrowDown':
-          volumeDown();
-          e.preventDefault();
-          break;
-      }
-    }
+              <div class="song">
+                <div class="song-img">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/ad2e664a-3ab9-4f30-933a-623e26999030"
+                    alt="" />
+                  <div class="overlay">
+                    <i class="fa-solid fa-play"></i>
+                  </div>
+                </div>
+                <div class="song-title">
+                  <h2>Pawn It All</h2>
+                  <p>Alicia Keys</p>
+                </div>
+                <span>3:10</span>
+              </div>
 
-    // Attach event listeners
-    powerBtn.addEventListener('click', togglePower);
-    nextBtn.addEventListener('click', nextChannel);
-    prevBtn.addEventListener('click', prevChannel);
-    volUpBtn.addEventListener('click', volumeUp);
-    volDownBtn.addEventListener('click', volumeDown);
-    window.addEventListener('keydown', onKeyDown);
+              <div class="song">
+                <div class="song-img">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/666e065b-eb53-4320-a580-30e266370955"
+                    alt="" />
+                  <div class="overlay">
+                    <i class="fa-solid fa-play"></i>
+                  </div>
+                </div>
+                <div class="song-title">
+                  <h2>Lose Control</h2>
+                  <p>Teddy Swims</p>
+                </div>
+                <span>3:30</span>
+              </div>
 
-    // Initialize
-    updateVolumeIndicator();
-    updateChannelNumber();
-  })();
-</script>
+              <div class="song">
+                <div class="song-img">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/619ed17f-5df2-4d32-a419-78f120a1aa5c"
+                    alt="" />
+                  <div class="overlay">
+                    <i class="fa-solid fa-play"></i>
+                  </div>
+                </div>
+                <div class="song-title">
+                  <h2>Be The One</h2>
+                  <p>Dua Lipa</p>
+                </div>
+                <span>3:24</span>
+              </div>
 
-</body>
-</html>
+              <div class="song">
+                <div class="song-img">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/0ed3f51d-b769-4256-a4dd-8f35b12a1690"
+                    alt="" />
+                  <div class="overlay">
+                    <i class="fa-solid fa-play"></i>
+                  </div>
+                </div>
+                <div class="song-title">
+                  <h2>Delicate</h2>
+                  <p>Taylor Swift</p>
+                </div>
+                <span>3:54</span>
+              </div>
 
+              <div class="song">
+                <div class="song-img">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/33779e1a-55f9-402a-b004-002395d0fbf1"
+                    alt="" />
+                  <div class="overlay">
+                    <i class="fa-solid fa-play"></i>
+                  </div>
+                </div>
+                <div class="song-title">
+                  <h2>Last Christmas</h2>
+                  <p>Wham!</p>
+                </div>
+                <span>4:39</span>
+              </div>
+
+              <div class="song">
+                <div class="song-img">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/96bc0648-51f9-46ab-a426-766c6bc93d80"
+                    alt="" />
+                  <div class="overlay">
+                    <i class="fa-solid fa-play"></i>
+                  </div>
+                </div>
+                <div class="song-title">
+                  <h2>Paradise</h2>
+                  <p>Coldplay</p>
+                </div>
+                <span>4:20</span>
+              </div>
+
+              <div class="song">
+                <div class="song-img">
+                  <img
+                    src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/885b67a7-1816-4235-9dd3-5d879a202728"
+                    alt="" />
+                  <div class="overlay">
+                    <i class="fa-solid fa-play"></i>
+                  </div>
+                </div>
+                <div class="song-title">
+                  <h2>Easy On Me</h2>
+                  <p>Adele</p>
+                </div>
+                <span>3:45</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="music-player">
+            <div class="album-cover">
+              <img src="images/album-cover.png" id="rotatingImage" alt="" />
+              <span class="point"></span>
+            </div>
+
+            <h2>Redemption</h2>
+            <p>Besomorph & Coopex</p>
+
+            <audio id="song">
+              <source src="Besomorph-Coopex-Redemption.mp3" type="audio/mpeg" />
+            </audio>
+
+            <input type="range" value="0" id="progress" />
+
+            <div class="controls">
+              <button class="backward">
+                <i class="fa-solid fa-backward"></i>
+              </button>
+              <button class="play-pause-btn">
+                <i class="fa-solid fa-play" id="controlIcon"></i>
+              </button>
+              <button class="forward">
+                <i class="fa-solid fa-forward"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+   <script src="script.js"></script>
+  </body>
