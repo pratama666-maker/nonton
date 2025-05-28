@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Favorit</title>
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(-45deg, #3a2a42, #4c3b52, #2d2a3d, #392f4b);
+      background-size: 400% 400%;
+      animation: bgShift 20s ease infinite;
+      color: #eee;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    @keyframes bgShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .back-button {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #f0f0f0;
+      font-size: 16px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      margin-right: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .back-button:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+    }
+    .favorite-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .favorite-item {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: background 0.3s ease;
+      cursor: pointer;
+    }
+    .favorite-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .fav-thumb {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .fav-info {
+      flex: 1;
+    }
+    .fav-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+    .fav-artist {
+      font-size: 14px;
+      color: #bbb;
+      margin-top: 4px;
+    }
+    .remove-btn {
+      background: #ff4c4c;
+      border: none;
+      color: white;
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .remove-btn:hover {
+      background: #ff1a1a;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="back-button" onclick="history.back()">← Kembali</button>
+    <h1>❤️ Favorit Kamu</h1>
+  </header>
+
+  <div class="favorite-list">
+    <div class="favorite-item">
+      <img class="fav-thumb" src="https://placehold.co/100x100?text=Dark+Melody" alt="Dark Melody" />
+      <div class="fav-info">
+        <div class="fav-title">Dark Melody</div>
+        <div class="fav-artist">@nightvibes</div>
+      </div>
+      <button class="remove-btn" onclick="alert('Hapus dari favorit?')">Hapus</button>
+    </div>
+
+    <div class="favorite-item">
+      <img class="fav-thumb" src="https://placehold.co/100x100?text=Silent+Prayers" alt="Silent Prayers" />
+      <div class="fav-info">
+        <div class="fav-title">Silent Prayers</div>
+        <div class="fav-artist">@prayerzone</div>
+      </div>
+      <button class="remove-btn" onclick="alert('Hapus dari favorit?')">Hapus</button>
+    </div>
+
+    <div class="favorite-item">
+      <img class="fav-thumb" src="https://placehold.co/100x100?text=Graveyard+Beats" alt="Graveyard Beats" />
+      <div class="fav-info">
+        <div class="fav-title">Graveyard Beats</div>
+        <div class="fav-artist">@underground</div>
+      </div>
+      <button class="remove-btn" onclick="alert('Hapus dari favorit?')">Hapus</button>
+    </div>
+
+    <div class="favorite-item">
+      <img class="fav-thumb" src="https://placehold.co/100x100?text=Goat+Wave" alt="Goat Wave" />
+      <div class="fav-info">
+        <div class="fav-title">Goat Wave</div>
+        <div class="fav-artist">@ritualsound</div>
+      </div>
+      <button class="remove-btn" onclick="alert('Hapus dari favorit?')">Hapus</button>
+    </div>
+  </div>
+
+</body>
+</html>
