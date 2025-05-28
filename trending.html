@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trending</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(-45deg, #2e2e4d, #3d1f40, #1c2b38, #242424);
+      background-size: 500% 500%;
+      animation: backgroundMove 20s ease infinite;
+      color: #ffffff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    @keyframes backgroundMove {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: #f0f0f0;
+      font-size: 16px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      margin-right: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background-color: rgba(255, 255, 255, 0.04);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, background 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      background-color: rgba(255, 255, 255, 0.07);
+      transform: translateY(-4px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 12px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .card-artist {
+      font-size: 14px;
+      color: #bdbdbd;
+    }
+
+    .label-hot {
+      display: inline-block;
+      background-color: #ff3e6c;
+      color: white;
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="back-button" onclick="history.back()">← Kembali</button>
+    <h1>🔥 Trending Hari Ini</h1>
+  </header>
+
+  <div class="grid-container">
+    <div class="card">
+      <img src="https://placehold.co/300x140?text=Goth+Beats" alt="Trending">
+      <div class="card-content">
+        <div class="card-title">Gothic Beats</div>
+        <div class="card-artist">@gothwave</div>
+        <span class="label-hot">HOT</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="https://placehold.co/300x140?text=Street+Sound" alt="Trending">
+      <div class="card-content">
+        <div class="card-title">Street Sound</div>
+        <div class="card-artist">@streetsoul</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="https://placehold.co/300x140?text=Metal+Drop" alt="Trending">
+      <div class="card-content">
+        <div class="card-title">Metal Drop</div>
+        <div class="card-artist">@metalhead</div>
+        <span class="label-hot">🔥 Trending</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="https://placehold.co/300x140?text=Pray+in+Dark" alt="Trending">
+      <div class="card-content">
+        <div class="card-title">Pray in Dark</div>
+        <div class="card-artist">@prayerzone</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="https://placehold.co/300x140?text=Grave+Melody" alt="Trending">
+      <div class="card-content">
+        <div class="card-title">Grave Melody</div>
+        <div class="card-artist">@underground</div>
+        <span class="label-hot">🔥</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="https://placehold.co/300x140?text=Goatwave" alt="Trending">
+      <div class="card-content">
+        <div class="card-title">Goatwave</div>
+        <div class="card-artist">@ritualsound</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
