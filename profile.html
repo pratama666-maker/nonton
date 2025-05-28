@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Profil Saya</title>
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(-45deg, #3a2a42, #4c3b52, #2d2a3d, #392f4b);
+      background-size: 400% 400%;
+      animation: bgShift 20s ease infinite;
+      color: #eee;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    @keyframes bgShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .back-button {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #f0f0f0;
+      font-size: 16px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      margin-right: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .back-button:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+    }
+    .profile-container {
+      max-width: 480px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 30px 20px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+      text-align: center;
+    }
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 20px;
+      border: 3px solid #fff5;
+      box-shadow: 0 0 12px #fff4;
+    }
+    .username {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .user-bio {
+      font-size: 15px;
+      color: #ccc;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 30px;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: #bbb;
+      margin-top: 4px;
+    }
+    .edit-profile-btn {
+      background: rgba(255,255,255,0.12);
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-size: 16px;
+      color: #eee;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .edit-profile-btn:hover {
+      background: rgba(255,255,255,0.25);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="back-button" onclick="history.back()">← Kembali</button>
+    <h1>Profil Saya</h1>
+  </header>
+
+  <div class="profile-container">
+    <img class="avatar" src="https://placehold.co/120x120?text=Avatar" alt="Avatar Pengguna" />
+    <div class="username">@metalcult</div>
+    <div class="user-bio">
+      Penggemar musik gothic dan metal, pecinta streetwear & budaya urban. Ikuti playlist saya dan nikmati vibes gelap yang keren.
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-number">128</div>
+        <div class="stat-label">Playlist</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">560</div>
+        <div class="stat-label">Follower</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">230</div>
+        <div class="stat-label">Following</div>
+      </div>
+    </div>
+
+    <button class="edit-profile-btn">Edit Profil</button>
+  </div>
+
+</body>
+</html>
