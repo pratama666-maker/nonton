@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Retro CRT TV Simulator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+  body {
+    background: #2e2b25;
+    margin: 0; padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'VT323', monospace;
+    user-select: none;
+    color: #ddd;
+  }
+  .tv-container {
+    position: relative;
+    width: 540px;
+    height: 390px;
+    background: linear-gradient(135deg, #3a2c1b 0%, #1c1210 40%, #392a1b 70%, #503f2e 100%);
+    border-radius: 40px 40px 35px 35px;
+    box-shadow:
+      inset 0 2px 10px rgba(255 255 255 / 0.07),
+      0 18px 40px rgba(0 0 0 / 0.8);
+    overflow: hidden;
+    border: 6px solid #3c2a19;
+  }
+  /* TV antenna on top */
+  .antenna {
+    position: absolute;
+    top: -110px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 140px;
+  }
+  .antenna-stick {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 6px;
+    height: 80px;
+    background: linear-gradient(180deg, #56503d, #2b2819);
+    border-radius: 8px;
+    transform: translateX(-50%);
+    box-shadow: inset 0 1px 2px #7a724f;
+  }
+  .antenna-arm {
+    position: absolute;
+    width: 70px;
+    height: 4px;
+    background: linear-gradient(90deg, #7b734e, #3a371a);
+    top: 25px;
+    left: 50%;
+    border-radius: 3px;
+    box-shadow: inset 0 1px 1px #a19969;
+  }
+  .antenna-arm.left {
+    transform-origin: right center;
+    transform: translateX(-50%) rotate(-30deg);
+    left: 12px;
+    top: 18px;
+  }
+  .antenna-arm.right {
+    transform-origin: left center;
+    transform: translateX(-50%) rotate(30deg);
+    left: auto;
+    right: 12px;
+    top: 18px;
+  }
+
+  /* Screen */
+  .screen {
+    position: relative;
+    background: #000;
+    width: 520px;
+    height: 290px;
+    margin: 25px auto 0;
+    border-radius: 28px;
+    box-shadow: inset 0 0 60px #003e3e, 0 0 10px #000;
+    overflow: hidden;
+    filter: contrast(1.1) brightness(1.1);
+  }
+  /* Channel number top-right */
+  .channel-number {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 32px;
+    font-weight: bold;
+    color: #61ff6b;
+    text-shadow:
+      0 0 4px #61ff6b,
+      0 0 8px #28c136;
+    user-select: none;
+    z-index: 21;
+    font-family: 'VT323', monospace;
+  }
+
+  /* Video container */
+  video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: #000;
+    object-fit: cover;
+  }
+
+  /* Noise overlays */
+  .noise-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    animation: noise 0.2s infinite;
+    z-index: 19;
+  }
+  .noise-overlay.light {
+    opacity: 0.06;
+  }
+  .noise-overlay.heavy {
+    opacity: 0.3;
+  }
+
+  @keyframes noise {
+    0%, 100% { background-position: 0 0; }
+    10% { background-position: -5px -5px; }
+    20% { background-position: 5px 5px; }
+    30% { background-position: -5px 5px; }
+    40% { background-position: 5px -5px; }
+    50% { background-position: 0 0; }
+    60% { background-position: -3px 3px; }
+    70% { background-position: 3px -3px; }
+    80% { background-position: -3px -3px; }
+    90% { background-position: 3px 3px; }
+  }
+
+  /* Noise texture - small dots */
+  .noise-overlay {
+    background-image: 
+      radial-gradient(#ccc 1px, transparent 1px),
+      radial-gradient(#ccc 1px, transparent 1px);
+    background-position: 0 0, 5px 5px;
+    background-size: 10px 10px;
+  }
+
+  /* Noise heavy uses bigger dots to appear more static */
+  .noise-overlay.heavy {
+    background-image:
+      radial-gradient(#eee 2px, transparent 2px),
+      radial-gradient(#eee 2px, transparent 2px);
+    background-position: 0 0, 10px 10px;
+    background-size: 20px 20px;
+  }
+
+  /* Power off full screen flash noise */
+  .flash-noise {
+    position: absolute;
+    inset: 0;
+    background-color: #aaa;
+    animation: flashNoise 0.3s linear forwards;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 100;
+  }
+  @keyframes flashNoise {
+    0% { background-color: #fff; }
+    100% { background-color: #000; }
+  }
+
+  /* Controls below screen */
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 14px;
+    user-select: none;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.7));
+  }
+  button {
+    cursor: pointer;
+    border: none;
+    color: #eee;
+    background: linear-gradient(145deg, #433422, #3a2e20);
+    box-shadow:
+      inset 1px 1px 3px #5b4a35,
+      inset -1px -1px 3px #2e230d;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  button:focus {
+    outline: 2px solid #61ff6b;
+    outline-offset: 2px;
+  }
+
+  button:hover {
+    background: linear-gradient(145deg, #4a3a29, #624e35);
+    box-shadow:
+      0 0 8px #48ff6f,
+      inset 1px 1px 5px #7aff7e,
+      inset -1px -1px 7px #3e4e26;
+    color: #b9f9b5;
+  }
+
+  /* Power button round */
+  .btn-power {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 54px;
+    text-align: center;
+    background: radial-gradient(circle at center, #833c14, #422006);
+    box-shadow:
+      inset 0 0 20px #f87416,
+      0 0 10px #c44b00;
+  }
+  .btn-power.power-on {
+    background: radial-gradient(circle at center, #4caf50, #2e7d32);
+    box-shadow:
+      inset 0 0 18px #a6dda6,
+      0 0 15px #66c466;
+  }
+
+  /* Other buttons elongated with rounded edges */
+  .btn-elongated {
+    height: 38px;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 17px;
+    font-weight: 600;
+    user-select: none;
+    box-shadow:
+      inset 1px 1px 3px #5b4a35,
+      inset -1px -1px 3px #2e230d;
+  }
+
+  /* Power indicator text */
+  .power-indicator {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 18px;
+    color: #61ff6b;
+    text-shadow: 0 0 6px #3ba23b;
+    font-family: 'VT323', monospace;
+  }
+
+  /* Volume bar inside screen */
+  .volume-indicator {
+    position: absolute;
+    bottom: 14px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    color: #61ff6b;
+    user-select: none;
+    letter-spacing: 6px;
+    font-family: 'VT323', monospace;
+    font-weight: 700;
+    z-index: 20;
+  }
+  .volume-line {
+    width: 4px;
+    background-color: #61ff6b;
+    margin: 0 3px;
+    border-radius: 1px;
+  }
+
+  /* Video audio retro effect - slight distortion using filter + canvas overlay is complex */
+  /* Will add subtle vibration effect by quick small horizontal layer movement on video that can simulate old CRT */
+  .video-retro {
+    animation: slightVibrate 0.15s infinite alternate;
+  }
+
+  @keyframes slightVibrate {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(1.5px); }
+  }
+
+  /* Channel empty message */
+  .channel-empty-msg {
+    position: absolute;
+    inset: 0;
+    color: #518c4e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'VT323', monospace;
+    font-size: 32px;
+    text-shadow: 0 0 4px #457f3a;
+    z-index: 20;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="tv-container" role="main" aria-label="Retro style CRT TV">
+
+  <div class="antenna" aria-hidden="true">
+    <div class="antenna-stick"></div>
+    <div class="antenna-arm left"></div>
+    <div class="antenna-arm right"></div>
+  </div>
+
+  <div class="screen" id="screen" aria-live="polite" aria-atomic="true" aria-labelledby="channelLabel">
+    <div class="channel-number" id="channelNumber" aria-label="Current channel number">--</div>
+
+    <video id="video" autoplay muted playsinline></video>
+    <div class="noise-overlay light" id="lightNoise" aria-hidden="true"></div>
+    <div class="noise-overlay heavy" id="heavyNoise" aria-hidden="true" style="display:none;"></div>
+
+    <div class="volume-indicator" aria-label="Volume level" role="region" aria-live="polite" aria-atomic="true" id="volumeIndicator" >
+      <span>-</span>
+      <div class="volume-line" style="height: 12px;"></div>
+      <div class="volume-line" style="height: 24px;"></div>
+      <div class="volume-line" style="height: 36px;"></div>
+      <div class="volume-line" style="height: 48px;"></div>
+      <span>+</span>
+    </div>
+
+    <div class="channel-empty-msg" id="emptyMsg" style="display: none;">NO SIGNAL</div>
+  </div>
+
+  <div class="controls" role="region" aria-label="TV controls">
+    <button class="btn-power" id="powerBtn" aria-pressed="false" aria-label="Power button">⏻</button>
+    <button class="btn-elongated" id="prevBtn" aria-label="Previous channel">PREV</button>
+    <button class="btn-elongated" id="nextBtn" aria-label="Next channel">NEXT</button>
+    <button class="btn-elongated" id="volDownBtn" aria-label="Volume down">VOL -</button>
+    <button class="btn-elongated" id="volUpBtn" aria-label="Volume up">VOL +</button>
+  </div>
+  <div class="power-indicator" id="powerIndicator" aria-live="polite" aria-atomic="true">Power: OFF</div>
+</div>
+
+<!-- Audio sources for sound effects -->
+<audio id="soundPowerOn" src="https://cdn.pixabay.com/download/audio/2021/09/26/audio_17d2ed41eb.mp3?filename=tv-turn-on-51.mp3" preload="auto"></audio>
+<audio id="soundPowerOff" src="https://cdn.pixabay.com/download/audio/2021/09/26/audio_4c8c68af03.mp3?filename=tv-turn-off-35.mp3" preload="auto"></audio>
+<!-- Stronger noise for static/empty channels -->
+<audio id="soundNoiseStrong" loop src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_1c10e2f282.mp3?filename=tv-static-ambient-4467.mp3" preload="auto"></audio>
+<!-- Subtle noise overlay sound for video channels -->
+<audio id="soundNoiseSubtle" loop src="https://cdn.pixabay.com/download/audio/2022/02/14/audio_58a09e76a8.mp3?filename=vinyl-surface-noise-20723.mp3" preload="auto"></audio>
+
+<script>
+  (() => {
+    const video = document.getElementById('video');
+    const powerBtn = document.getElementById('powerBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const volUpBtn = document.getElementById('volUpBtn');
+    const volDownBtn = document.getElementById('volDownBtn');
+    const channelNumberElem = document.getElementById('channelNumber');
+    const powerIndicator = document.getElementById('powerIndicator');
+    const lightNoise = document.getElementById('lightNoise');
+    const heavyNoise = document.getElementById('heavyNoise');
+    const emptyMsg = document.getElementById('emptyMsg');
+    const volumeIndicator = document.getElementById('volumeIndicator');
+    const soundPowerOn = document.getElementById('soundPowerOn');
+    const soundPowerOff = document.getElementById('soundPowerOff');
+    const soundNoiseStrong = document.getElementById('soundNoiseStrong');
+    const soundNoiseSubtle = document.getElementById('soundNoiseSubtle');
+    const screen = document.getElementById('screen');
+
+    let powerOn = false;
+    let currentChannel = 0;
+    let volume = 4; // range 0 to 5
+    const MAX_VOLUME = 5;
+    const MIN_VOLUME = 0;
+
+    // Channel list: Array of channels, each channel can be video url or null (empty channel)
+    const channels = [
+      null, // channel 0 empty
+      'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm',
+      'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/bee.webm',
+      null,
+      'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/surfing.webm',
+      null
+    ];
+    // Channels display number start from 1 for user
+    const totalChannels = channels.length;
+
+    // Update displayed channel number
+    function updateChannelNumber() {
+      channelNumberElem.textContent = (currentChannel + 1).toString().padStart(2, '0');
+      channelNumberElem.setAttribute('aria-label', `Current channel number ${(currentChannel+1)}`);
+    }
+
+    // Update volume visual inside screen
+    function updateVolumeIndicator() {
+      const lines = volumeIndicator.querySelectorAll('.volume-line');
+      lines.forEach((line, idx) => {
+        if (idx < volume) {
+          line.style.opacity = '1';
+          line.style.backgroundColor = '#61ff6b';
+          line.style.boxShadow = '0 0 8px #66c466';
+        } else {
+          line.style.opacity = '0.15';
+          line.style.backgroundColor = '#326931';
+          line.style.boxShadow = 'none';
+        }
+      });
+    }
+
+    // Play sound effect with volume safe try
+    function playSound(audioElement) {
+      audioElement.volume = 0.6;
+      audioElement.currentTime = 0;
+      audioElement.play().catch(() => {
+        // ignore play error if not allowed by user gesture
+      });
+    }
+
+    // Smooth volume fade helper
+    function fadeAudio(audioElement, fromVol, toVol, duration) {
+      const startTime = performance.now();
+      function step(now) {
+        const elapsed = now - startTime;
+        if (elapsed < duration) {
+          audioElement.volume = fromVol + (toVol - fromVol) * (elapsed / duration);
+          requestAnimationFrame(step);
+        } else {
+          audioElement.volume = toVol;
+          if (toVol === 0) audioElement.pause();
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    function stopNoiseSounds() {
+      [soundNoiseStrong, soundNoiseSubtle].forEach(audio => {
+        if (!audio.paused) {
+          fadeAudio(audio, audio.volume, 0, 400);
+        }
+      });
+    }
+
+    function playNoiseStrong() {
+      if (soundNoiseStrong.paused) {
+        soundNoiseStrong.volume = 0;
+        soundNoiseStrong.play().catch(() => {});
+      }
+      fadeAudio(soundNoiseStrong, soundNoiseStrong.volume, 0.45, 500);
+      // Ensure subtle noise off when strong noise playing:
+      if (!soundNoiseSubtle.paused) {
+        fadeAudio(soundNoiseSubtle, soundNoiseSubtle.volume, 0, 300);
+      }
+    }
+    function playNoiseSubtle() {
+      if (soundNoiseSubtle.paused) {
+        soundNoiseSubtle.volume = 0;
+        soundNoiseSubtle.play().catch(() => {});
+      }
+      fadeAudio(soundNoiseSubtle, soundNoiseSubtle.volume, 0.15, 300);
+      // Ensure strong noise off when subtle noise playing:
+      if (!soundNoiseStrong.paused) {
+        fadeAudio(soundNoiseStrong, soundNoiseStrong.volume, 0, 500);
+      }
+    }
+
+    // Show noise overlay conditionally:
+    // If channel has video: show light noise + subtle noise sound
+    // If channel empty: show heavy noise + strong noise sound + empty message
+    // If power off: no video or noise displays and no noise sound, only black screen with flash noise animation
+    function updateScreenContent() {
+      if (!powerOn) {
+        video.pause();
+        video.src = '';
+        emptyMsg.style.display = 'none';
+        lightNoise.style.display = 'none';
+        heavyNoise.style.display = 'none';
+        stopNoiseSounds();
+        return;
+      }
+      const channelUrl = channels[currentChannel];
+      updateChannelNumber();
+
+      if (!channelUrl) {
+        // empty channel, show heavy noise and static
+        video.pause();
+        video.src = '';
+        emptyMsg.style.display = 'flex';
+        heavyNoise.style.display = '';
+        lightNoise.style.display = 'none';
+        playNoiseStrong();
+      } else {
+        // channel with video
+        emptyMsg.style.display = 'none';
+        heavyNoise.style.display = 'none';
+        lightNoise.style.display = '';
+        video.classList.add('video-retro');
+        video.src = channelUrl;
+        video.volume = volume / MAX_VOLUME;
+        video.play().catch(() => {});
+        playNoiseSubtle();
+      }
+    }
+
+    // Flash noise animation on power off for ~0.3s
+    function animateFlashNoise() {
+      const flashDiv = document.createElement('div');
+      flashDiv.className = 'flash-noise';
+      screen.appendChild(flashDiv);
+      setTimeout(() => {
+        flashDiv.remove();
+      }, 300);
+    }
+
+    // Toggle power
+    function togglePower() {
+      if (powerOn) {
+        // Turn off
+        powerOn = false;
+        powerIndicator.textContent = 'Power: OFF';
+        powerBtn.classList.remove('power-on');
+        powerBtn.setAttribute('aria-pressed', 'false');
+        animateFlashNoise();
+        updateScreenContent();
+        playSound(soundPowerOff);
+      } else {
+        // Turn on
+        powerOn = true;
+        powerIndicator.textContent = 'Power: ON';
+        powerBtn.classList.add('power-on');
+        powerBtn.setAttribute('aria-pressed', 'true');
+        playSound(soundPowerOn);
+        updateScreenContent();
+      }
+    }
+
+    // Next channel
+    function nextChannel() {
+      if (!powerOn) return;
+      currentChannel = (currentChannel + 1) % totalChannels;
+      updateScreenContent();
+    }
+    // Prev channel
+    function prevChannel() {
+      if (!powerOn) return;
+      currentChannel = (currentChannel - 1 + totalChannels) % totalChannels;
+      updateScreenContent();
+    }
+
+    // Volume Up
+    function volumeUp() {
+      if (!powerOn) return;
+      if (volume < MAX_VOLUME) {
+        volume++;
+        updateVolumeIndicator();
+        if (channels[currentChannel]) {
+          video.volume = volume / MAX_VOLUME;
+        }
+      }
+    }
+    // Volume Down
+    function volumeDown() {
+      if (!powerOn) return;
+      if (volume > MIN_VOLUME) {
+        volume--;
+        updateVolumeIndicator();
+        if (channels[currentChannel]) {
+          video.volume = volume / MAX_VOLUME;
+        }
+      }
+    }
+
+    // Keyboard support for demo and accessibility
+    function onKeyDown(e) {
+      if (e.repeat) return;
+      switch(e.key) {
+        case 'p':
+        case 'P':
+        case ' ':
+        case 'Enter':
+          togglePower();
+          e.preventDefault();
+          break;
+        case 'ArrowRight':
+          nextChannel();
+          e.preventDefault();
+          break;
+        case 'ArrowLeft':
+          prevChannel();
+          e.preventDefault();
+          break;
+        case 'ArrowUp':
+          volumeUp();
+          e.preventDefault();
+          break;
+        case 'ArrowDown':
+          volumeDown();
+          e.preventDefault();
+          break;
+      }
+    }
+
+    // Attach event listeners
+    powerBtn.addEventListener('click', togglePower);
+    nextBtn.addEventListener('click', nextChannel);
+    prevBtn.addEventListener('click', prevChannel);
+    volUpBtn.addEventListener('click', volumeUp);
+    volDownBtn.addEventListener('click', volumeDown);
+    window.addEventListener('keydown', onKeyDown);
+
+    // Initialize
+    updateVolumeIndicator();
+    updateChannelNumber();
+  })();
+</script>
+
+</body>
+</html>
+
