@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Playlist</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(-45deg, #2e2e4d, #3d1f40, #1c2b38, #242424);
+      background-size: 400% 400%;
+      animation: gradientShift 20s ease infinite;
+      color: #ffffff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: #f0f0f0;
+      font-size: 16px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      margin-right: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+    }
+
+    .playlist-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .playlist-item {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      gap: 15px;
+      transition: background 0.3s ease;
+      cursor: pointer;
+    }
+
+    .playlist-item:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .playlist-thumb {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .playlist-info {
+      flex: 1;
+    }
+
+    .playlist-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .playlist-creator {
+      font-size: 14px;
+      color: #bbb;
+      margin-top: 4px;
+    }
+
+    .play-button {
+      background: #ffffff22;
+      border: none;
+      color: white;
+      font-size: 18px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .play-button:hover {
+      background: #ffffff33;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="back-button" onclick="history.back()">← Kembali</button>
+    <h1>🎶 Playlist Favorit</h1>
+  </header>
+
+  <div class="playlist-container">
+    <div class="playlist-item">
+      <img class="playlist-thumb" src="https://placehold.co/100x100?text=Chill+Vibes" alt="Playlist Cover">
+      <div class="playlist-info">
+        <div class="playlist-title">Chill Vibes</div>
+        <div class="playlist-creator">Oleh @relaxzone</div>
+      </div>
+      <button class="play-button">▶</button>
+    </div>
+
+    <div class="playlist-item">
+      <img class="playlist-thumb" src="https://placehold.co/100x100?text=Dark+Wave" alt="Playlist Cover">
+      <div class="playlist-info">
+        <div class="playlist-title">Dark Wave</div>
+        <div class="playlist-creator">Oleh @nightcore</div>
+      </div>
+      <button class="play-button">▶</button>
+    </div>
+
+    <div class="playlist-item">
+      <img class="playlist-thumb" src="https://placehold.co/100x100?text=Grave+Beats" alt="Playlist Cover">
+      <div class="playlist-info">
+        <div class="playlist-title">Grave Beats</div>
+        <div class="playlist-creator">Oleh @underground</div>
+      </div>
+      <button class="play-button">▶</button>
+    </div>
+
+    <div class="playlist-item">
+      <img class="playlist-thumb" src="https://placehold.co/100x100?text=Prayer+Mode" alt="Playlist Cover">
+      <div class="playlist-info">
+        <div class="playlist-title">Prayer Mode</div>
+        <div class="playlist-creator">Oleh @blessedcore</div>
+      </div>
+      <button class="play-button">▶</button>
+    </div>
+  </div>
+
+</body>
+</html>
